@@ -1,0 +1,37 @@
+version: '3'
+volumes:
+  mongodb: {}
+services:
+  nginx_load_balancer:
+    image: nginx
+    container_name: production_nginx
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/nginx.conf
+    ports:
+      - '8080:80'
+    depends_on:
+      - app
+    networks:
+      - mynet
+  app:
+    container_name: nodejs-mongo
+    image: samuk00/nodejs-mongo_app:latest
+    restart: always
+    build: .
+    deploy:
+      replicas: 2
+    links:
+      - mongo
+    networks:
+      - mynet
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - mynet
+networks:
+        mynet:
